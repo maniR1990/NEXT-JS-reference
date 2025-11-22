@@ -1,16 +1,15 @@
-export type ApiNameListResponse = {
+export type NameList = {
   id: string;
   title: string;
-  delayMs: number;
-  loadedAt: string;
   names: string[];
+  delayMs?: number;
 };
 
-export type ApiDelayListResponse<DelayMsList> = {
+export type DelayProvider = {
   id: string;
   title: string;
+  delayMsList: readonly number[];
   loadedAt: string;
-  delayMsList: DelayMsList;
 };
 
 const sleep = (delayMs: number) =>
@@ -18,133 +17,77 @@ const sleep = (delayMs: number) =>
     setTimeout(resolve, delayMs);
   });
 
-const baseNames: string[] = [
-  'Ada Lovelace',
-  'Alan Turing',
-  'Grace Hopper',
-  'Donald Knuth',
-  'Edsger Dijkstra',
-  'Barbara Liskov',
-  'Linus Torvalds',
-  'Margaret Hamilton',
-  'Ken Thompson',
-  'Dennis Ritchie',
-  'Guido van Rossum',
-  'Bjarne Stroustrup',
-  'James Gosling',
-  'Brendan Eich',
-  'John Carmack',
-  'Leslie Lamport',
-  'Niklaus Wirth',
-  'John McCarthy',
-  'Robin Milner',
-  'Yukihiro Matsumoto',
-  'Anders Hejlsberg',
-  'Brian Kernighan',
-  'Rob Pike',
-  'Martin Fowler',
-  'Kent Beck',
-  'Eric Evans',
-  'Rich Hickey',
-  'Evan You',
-  'Misko Hevery',
-  'Dan Abramov',
-  'Ryan Dahl',
-  'David Heinemeier Hansson',
-  'TJ Holowaychuk',
-  'Douglas Crockford',
-  'Sandi Metz',
-];
+const basicNames = ['Alice', 'Bob', 'Charlie', 'Dana', 'Elliot', 'Farah', 'Gabe'];
 
-const getRandomIntInclusive = (min: number, max: number) => {
-  const minCeil = Math.ceil(min);
-  const maxFloor = Math.floor(max);
+const createList = (config: NameList): Promise<NameList> => {
+  if (!config.delayMs) return Promise.resolve(config);
 
-  return Math.floor(Math.random() * (maxFloor - minCeil + 1)) + minCeil;
+  return sleep(config.delayMs).then(() => config);
 };
 
-const createRandomNameList = () => {
-  const listLength = getRandomIntInclusive(12, 36);
-
-  return Array.from({ length: listLength }, () => {
-    const index = getRandomIntInclusive(0, baseNames.length - 1);
-    return baseNames[index];
-  });
-};
-
-const createNameListResponse = (config: {
+const createDelayProvider = (config: {
   id: string;
   title: string;
+  delayMsList: readonly number[];
   delayMs: number;
-}): Promise<ApiNameListResponse> =>
+}): Promise<DelayProvider> =>
   sleep(config.delayMs).then(() => ({
     id: config.id,
     title: config.title,
-    delayMs: config.delayMs,
-    loadedAt: new Date().toISOString(),
-    names: createRandomNameList(),
-  }));
-
-const createDelayListResponse = <DelayMsList>(config: {
-  id: string;
-  title: string;
-  delayMs: number;
-  delayMsList: DelayMsList;
-}): Promise<ApiDelayListResponse<DelayMsList>> =>
-  sleep(config.delayMs).then(() => ({
-    id: config.id,
-    title: config.title,
-    loadedAt: new Date().toISOString(),
     delayMsList: config.delayMsList,
+    loadedAt: new Date().toISOString(),
   }));
 
-export const fetchSidebarApiA = () =>
-  createDelayListResponse({
-    id: 'sidebar-api-a',
-    title: 'Sidebar API A',
-    delayMs: 750,
-    delayMsList: [1000, 3000] as const,
+export const fetchSidebarDelayProvider = () =>
+  createDelayProvider({
+    id: 'sidebar-delay-provider',
+    title: 'Sidebar delay provider',
+    delayMs: 400,
+    delayMsList: [500, 700],
   });
 
-export const fetchSidebarApiB = (delayMs: number) =>
-  createNameListResponse({
-    id: 'sidebar-api-b',
-    title: 'Sidebar API B',
-    delayMs,
+export const fetchSidebarLists = (delayMsList: readonly number[]) =>
+  Promise.all([
+    createList({
+      id: 'sidebar-team',
+      title: 'Sidebar team',
+      delayMs: delayMsList[0],
+      names: basicNames.slice(0, 4),
+    }),
+    createList({
+      id: 'sidebar-favorites',
+      title: 'Sidebar favorites',
+      delayMs: delayMsList[1] ?? delayMsList[0],
+      names: basicNames.slice(3),
+    }),
+  ]);
+
+export const fetchHomeDelayProvider = () =>
+  createDelayProvider({
+    id: 'home-delay-provider',
+    title: 'Home delay provider',
+    delayMs: 600,
+    delayMsList: [300, 400, 500],
   });
 
-export const fetchSidebarApiC = (delayMs: number) =>
-  createNameListResponse({
-    id: 'sidebar-api-c',
-    title: 'Sidebar API C',
-    delayMs,
-  });
-
-export const fetchHomeApiD = () =>
-  createDelayListResponse({
-    id: 'home-api-d',
-    title: 'Home API D',
-    delayMs: 1500,
-    delayMsList: [1000, 3000, 5000] as const,
-  });
-
-export const fetchHomeApiE = (delayMs: number) =>
-  createNameListResponse({
-    id: 'home-api-e',
-    title: 'Home API E',
-    delayMs,
-  });
-
-export const fetchHomeApiF = (delayMs: number) =>
-  createNameListResponse({
-    id: 'home-api-f',
-    title: 'Home API F',
-    delayMs,
-  });
-
-export const fetchHomeApiG = (delayMs: number) =>
-  createNameListResponse({
-    id: 'home-api-g',
-    title: 'Home API G',
-    delayMs,
-  });
+export const fetchHomeLists = (delayMsList: readonly number[]) =>
+  Promise.all([
+    createList({
+      id: 'home-recent',
+      title: 'Recently viewed',
+      delayMs: delayMsList[0],
+      names: basicNames,
+    }),
+    createList({
+      id: 'home-popular',
+      title: 'Popular choices',
+      delayMs: delayMsList[1] ?? delayMsList[0],
+      names: [...basicNames].reverse(),
+    }),
+    createList({
+      id: 'home-featured',
+      title: 'Featured',
+      delayMs: delayMsList[2] ?? delayMsList[0],
+      names: ['Hana', 'Ivan', 'Jules'],
+    }),
+  ]);
