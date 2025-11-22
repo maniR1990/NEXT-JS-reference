@@ -1,21 +1,14 @@
 import React from 'react';
-import { ApiNameListResponse } from '../utils/apicalls';
+import { NameList } from '../utils/apicalls';
 
-export default async function NameListSection({
-  fetcher,
-}: {
-  fetcher: () => Promise<ApiNameListResponse>;
-}) {
-  const data = await fetcher();
-
+export default function NameListSection({ data }: { data: NameList }) {
+  
   return (
     <section className="card">
       <header className="card-header">
         <p className="eyebrow">{data.id}</p>
         <h3>{data.title}</h3>
-        <p className="muted">
-          Delay: {data.delayMs} ms · Loaded at {new Date(data.loadedAt).toLocaleTimeString()}
-        </p>
+        {data.delayMs ? <p className="muted">Simulated delay: {data.delayMs} ms</p> : null}
       </header>
       <ul className="name-list">
         {data.names.map((name, index) => (
