@@ -2,6 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Sidebar from './sidebar';
+import { Suspense } from 'react';
+import SectionSkeleton from './components/SectionSkeleton';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,8 +23,17 @@ export default function RootLayout({
       <body className={inter.className}>
         <div className="app-shell">
           <aside className="sidebar">
-            <h2 className="section-title">Sidebar</h2>
-            <Sidebar />
+            <h2 className="section-title">Sidebar (2 lists)</h2>
+            <Suspense
+              fallback={
+                <SectionSkeleton
+                  title="Sidebar preliminary fetch"
+                  description="Waiting for sidebar delay values"
+                />
+              }
+            >
+              <Sidebar />
+            </Suspense>
           </aside>
           <main className="main">
             {children}

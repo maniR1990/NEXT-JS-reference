@@ -1,14 +1,26 @@
 import React from 'react';
-import { NameList } from '../utils/apicalls';
+import { ApiNameListResponse } from '../utils/apicalls';
 
-export default function NameListSection({ data }: { data: NameList }) {
-  
+/**
+ * Server component that awaits a pre-started data fetch and renders the list once available.
+ * Each instance is intended to sit behind its own Suspense boundary so streaming keeps the
+ * rest of the UI unblocked while the fetch resolves.
+ */
+export default async function NameListSection({
+  dataPromise,
+}: {
+  dataPromise: Promise<ApiNameListResponse>;
+}) {
+  const data = await dataPromise;
+
   return (
     <section className="card">
       <header className="card-header">
         <p className="eyebrow">{data.id}</p>
         <h3>{data.title}</h3>
-        {data.delayMs ? <p className="muted">Simulated delay: {data.delayMs} ms</p> : null}
+        <p className="muted">
+          Delay: {data.delayMs} ms · Loaded at {new Date(data.loadedAt).toLocaleTimeString()}
+        </p>
       </header>
       <ul className="name-list">
         {data.names.map((name, index) => (
