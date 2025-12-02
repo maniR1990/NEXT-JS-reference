@@ -1,65 +1,41 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import {
   fetchSidebarApiA,
   fetchSidebarApiB,
   fetchSidebarApiC,
 } from './utils/apicalls';
-import NameListSection from './components/NameListSection';
-import SectionSkeleton from './components/SectionSkeleton';
+import PreliminaryCard from './components/PreliminaryCard';
+import SuspenseNameSection from './components/SuspenseNameSection';
 
-async function SidebarLists({ delayMsList }: { delayMsList: readonly number[] }) {
-  const [delayForB, delayForC] = delayMsList;
+type SidebarConfig = {
+  title: string;
+  delayMs: number;
+  dataPromise: ReturnType<typeof fetchSidebarApiB>;
+};
 
-  // Kick off both dependent data fetches immediately after we know the delays.
-  const sidebarBPromise = fetchSidebarApiB(delayForB);
-  const sidebarCPromise = fetchSidebarApiC(delayForC);
-
-  return (
-    <div className="stack">
-      <Suspense
-        fallback={
-          <SectionSkeleton
-            title="Sidebar API B"
-            description={`Waiting ${delayForB} ms for Sidebar API B`}
-          />
-        }
-      >
-        <NameListSection dataPromise={sidebarBPromise} />
-      </Suspense>
-
-      <Suspense
-        fallback={
-          <SectionSkeleton
-            title="Sidebar API C"
-            description={`Waiting ${delayForC} ms for Sidebar API C`}
-          />
-        }
-      >
-        <NameListSection dataPromise={sidebarCPromise} />
-      </Suspense>
-    </div>
-  );
-}
+const createSidebarConfigs = (delayMsList: readonly number[]): SidebarConfig[] => [
+  { title: 'Sidebar API B', delayMs: delayMsList[0], dataPromise: fetchSidebarApiB(delayMsList[0]) },
+  { title: 'Sidebar API C', delayMs: delayMsList[1], dataPromise: fetchSidebarApiC(delayMsList[1]) },
+];
 
 export default async function Sidebar() {
-  // 1) Fetch preliminary delay values on the server.
   const preliminary = await fetchSidebarApiA();
+  const sidebarConfigs = createSidebarConfigs(preliminary.delayMsList);
 
   return (
     <div className="stack">
-      <section className="card">
-        <header className="card-header">
-          <p className="eyebrow">{preliminary.id}</p>
-          <h3>{preliminary.title}</h3>
-          <p className="muted">
-            Loaded at {new Date(preliminary.loadedAt).toLocaleTimeString()}. Delay values: [
-            {preliminary.delayMsList.join(', ')}] (ms)
-          </p>
-        </header>
-      </section>
+      <PreliminaryCard data={preliminary} description="Sidebar preliminary fetch" />
 
-      {/* 2) Stream dependent calls inside Suspense so each list reveals independently. */}
-      <SidebarLists delayMsList={preliminary.delayMsList} />
+      <div className="stack">
+        {sidebarConfigs.map((config) => (
+          <SuspenseNameSection
+            key={config.title}
+            title={config.title}
+            delayMs={config.delayMs}
+            dataPromise={config.dataPromise}
+          />
+        ))}
+      </div>
     </div>
   );
 }
