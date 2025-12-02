@@ -1,8 +1,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { cookies } from 'next/headers';
-import { getSessionUser } from './lib/auth';
+import Sidebar from './sidebar';
+import { Suspense } from 'react';
+import SectionSkeleton from './components/SectionSkeleton';
 
 export const metadata: Metadata = {
   title: 'Workspace Analytics',
@@ -16,25 +16,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <div className="site-shell">
-          <header className="site-header">
-            <Link href="/" className="brand">
-              Workspace Analytics
-            </Link>
-            <nav className="nav">
-              <Link href="/pricing">Pricing</Link>
-              <Link href="/blog">Blog</Link>
-              {sessionUser ? (
-                <Link href="/app">Go to app</Link>
-              ) : (
-                <Link href="/auth/login">Log in</Link>
-              )}
-            </nav>
-          </header>
-          <main className="site-main">{children}</main>
-          <footer className="site-footer">
-            <p>Built with Next.js · Streaming, caching, middleware, and more.</p>
-          </footer>
+        <div className="app-shell">
+          <aside className="sidebar">
+            <h2 className="section-title">Sidebar (2 lists)</h2>
+            <Suspense
+              fallback={
+                <SectionSkeleton
+                  title="Sidebar preliminary fetch"
+                  description="Waiting for sidebar delay values"
+                />
+              }
+            >
+              <Sidebar />
+            </Suspense>
+          </aside>
+          <main className="main">
+            {children}
+          </main>
         </div>
       </body>
     </html>
