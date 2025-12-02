@@ -1,11 +1,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import Sidebar from './sidebar';
 import { Suspense } from 'react';
 import SectionSkeleton from './components/SectionSkeleton';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Streaming App Router Demo',
@@ -20,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         <div className="app-shell">
           <aside className="sidebar">
             <h2 className="section-title">Sidebar (2 lists)</h2>
